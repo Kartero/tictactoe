@@ -19,9 +19,11 @@ struct Game {
 
 void printBoard(struct Game *game);
 bool playerTurn(struct Game *game);
-void placeMove(short* intMove, short mark, struct Game* game);
+void placeMove(short intMove[], short mark, struct Game* game);
 bool aiTurn(struct Game* game);
 short* convertMoveToInt(string move);
+bool checkStatus(Game* game);
+short determineWinner(Game* game);
 
 int main()
 {
@@ -30,9 +32,9 @@ int main()
     printBoard(&game);
     while (run) {
         playerTurn(&game);
-        printBoard(&game);
         aiTurn(&game);
-        run = false;
+        printBoard(&game);
+        run = checkStatus(&game);
     }
 
     return 0;
@@ -63,12 +65,13 @@ bool playerTurn(struct Game *game) {
     cin >> move;
     game->player[game->playerMoves] = move;
     game->playerMoves++;
-    short *intMove = convertMoveToInt(move);
+    short *intMove_p = convertMoveToInt(move);;
+    short intMove[2] = { intMove_p[0], intMove_p[1] };
     placeMove(intMove, 1, game);
     return false;
 }
 
-void placeMove(short* intMove, short mark, struct Game* game) {
+void placeMove(short intMove[], short mark, struct Game* game) {
     short row_val = intMove[0];
     short col_val = intMove[1];
 
@@ -80,41 +83,20 @@ void placeMove(short* intMove, short mark, struct Game* game) {
     }
 }
 
-/*void placeMove(string move, short mark, struct Game* game) {
-    char first = move.at(0);
-    short row_val;
-    if (first == 'a') {
-        row_val = 1;
-    } 
-    else if (first == 'b') {
-        row_val = 2;
-    }
-    else {
-        row_val = 3;
-    }
-    char second = move.at(1);
-    short col_val = second - 48;
-
-    if (row_val > 0 && row_val <= 3 && col_val > 0 && col_val <= 3) {
-        short cur_val = game->board[row_val - 1][col_val - 1];
-        if (cur_val == 0) {
-            game->board[row_val - 1][col_val - 1] = mark;
-        }
-    }
-}*/
-
 bool aiTurn(struct Game* game) {
     short freeSpots[9][2];
     short fpIndex = 0;
     for (short i = 0; i < 3; i++) {
         for (short j = 0; j < 3; j++) {
             if (game->board[i][j] == 0) {
-                freeSpots[fpIndex][0] = i;
-                freeSpots[fpIndex][1] = j;
+                freeSpots[fpIndex][0] = i + 1;
+                freeSpots[fpIndex][1] = j + 1;
                 fpIndex++;
             }
         }
     }
+
+    placeMove(freeSpots[0], 2, game);
 
     return false;
 }
@@ -138,4 +120,26 @@ short* convertMoveToInt(string move) {
     intMove[1] = col_val;
 
     return intMove;
+}
+
+bool checkStatus(Game* game) {
+    bool emptySpots = false;
+    for (short i = 0; i < 3; i++) {
+        for (short j = 0; j < 3; j++) {
+            if (game->board[i][j] == 0) {
+                emptySpots = true;
+            }
+        }
+    }
+
+    if (!emptySpots) {
+        cout << "Draw" << endl;
+        return false;
+    }
+
+    return true;
+}
+
+short determineWinner(Game* game) {
+
 }
